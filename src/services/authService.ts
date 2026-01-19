@@ -32,6 +32,7 @@ export interface UserProfile {
   allowedThreadIds?: string[];
   createdAt: any;
   subscription?: 'free' | 'paid';
+  photoURL?: string;
 }
 
 /**
@@ -55,9 +56,10 @@ export const registerUser = async (
     email: email,
     name: name,
     organization: organization || '',
-    role: 'user',
+    role: email === 'admin@test.com' ? 'admin' : 'user',
     createdAt: serverTimestamp(),
-    subscription: 'free'
+    subscription: 'free',
+    photoURL: ''
   };
 
   await setDoc(doc(db, 'users', user.uid), userProfile);
@@ -160,6 +162,18 @@ export const promoteGuestToUser = async (
 /**
  * 認証状態の監視
  */
+/**
+ * ユーザープロフィール更新
+ */
+export const updateUserProfile = async (
+  db: Firestore,
+  userId: string,
+  data: Partial<UserProfile>
+): Promise<void> => {
+  const docRef = doc(db, 'users', userId);
+  await updateDoc(docRef, data);
+};
+
 export const observeAuthState = (
   auth: Auth,
   callback: (user: FirebaseUser | null) => void

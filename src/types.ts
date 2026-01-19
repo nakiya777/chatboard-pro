@@ -10,9 +10,17 @@ export interface DocData {
   author: string;
 }
 
+/**
+ * Annotation Data Structure
+ * 
+ * Coordinate System:
+ * - x, y: Top-left corner of the unrotated bounding box.
+ * - width, height: Dimensions of the unrotated bounding box.
+ * - rotation: Degrees clockwise. Rotation occurs around the center (x + width/2, y + height/2).
+ */
 export interface Annotation {
   id: string;
-  type: 'select' | 'arrow' | 'rect' | 'circle' | 'star' | 'text' | 'pencil';
+  type: 'select' | 'arrow' | 'rect' | 'circle' | 'star' | 'text' | 'pencil' | 'image';
   x: number;
   y: number;
   width?: number;
@@ -29,6 +37,8 @@ export interface Annotation {
   docId: string;
   status: string;
   points?: { x: number; y: number }[];
+  url?: string;
+  arrowPoint?: { x: number; y: number };
   author: string;
   createdAt: Timestamp;
 }
@@ -71,4 +81,5 @@ export interface ColorSystem {
   shadow: string;
   highlight: string;
   text: string;
+  textSecondary: string;
 }

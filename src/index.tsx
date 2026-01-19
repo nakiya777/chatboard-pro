@@ -12,8 +12,21 @@ const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
     <AuthWrapper>
-      {({ user, userProfile, onLogout }) => (
-        <App />
+      {({ user, userProfile, projectId, db, onLogout, onBackToProjects, theme, setTheme, colorSystem, setColorSystem, language, setLanguage }) => (
+        <App 
+            user={user}
+            userProfile={userProfile}
+            projectId={projectId}
+            db={db}
+            onLogout={onLogout}
+            onBackToProjects={onBackToProjects}
+            theme={theme}
+            setTheme={setTheme}
+            colorSystem={colorSystem}
+            setColorSystem={setColorSystem}
+            language={language}
+            setLanguage={setLanguage}
+        />
       )}
     </AuthWrapper>
   </React.StrictMode>

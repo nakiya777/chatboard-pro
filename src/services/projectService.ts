@@ -1,7 +1,4 @@
-/**
- * プロジェクトサービス
- * プロジェクトのCRUD操作を管理
- */
+// ... imports
 import { 
   collection, 
   doc, 
@@ -13,7 +10,8 @@ import {
   query,
   where,
   serverTimestamp,
-  Firestore
+  Firestore,
+  arrayUnion
 } from 'firebase/firestore';
 
 export interface Project {
@@ -22,10 +20,21 @@ export interface Project {
   description: string;
   ownerId: string;
   memberIds: string[];
+  inviteCode?: string; // Add inviteCode
   createdAt: any;
 }
 
 const PROJECTS_COLLECTION = 'projects';
+
+// Helper to generate 6-char alphanumeric code
+const generateInviteCode = (): string => {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Remove confusing chars (I, 1, O, 0)
+  let code = '';
+  for (let i = 0; i < 6; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return code;
+};
 
 /**
  * プロジェクト作成
@@ -41,12 +50,72 @@ export const createProject = async (
     description,
     ownerId,
     memberIds: [ownerId],
+    inviteCode: generateInviteCode(),
     createdAt: serverTimestamp()
   };
 
   const docRef = await addDoc(collection(db, PROJECTS_COLLECTION), projectData);
   return docRef.id;
 };
+
+// ... getProject, getUserProjects ...
+
+// Update existing functions to be robust? No, they are fine.
+
+/**
+ * 招待コードでプロジェクトに参加
+ */
+export const joinProjectByCode = async (
+  db: Firestore,
+  userId: string,
+  inviteCode: string
+): Promise<string | null> => {
+  // Query to find project with this code
+  const q = query(
+    collection(db, PROJECTS_COLLECTION),
+    where('inviteCode', '==', inviteCode)
+  );
+  
+  const querySnapshot = await getDocs(q);
+  
+  if (querySnapshot.empty) {
+    throw new Error('Project not found or invalid code');
+  }
+
+  const projectDoc = querySnapshot.docs[0];
+  const projectData = projectDoc.data() as Project;
+
+  // Check if already a member
+  if (projectData.memberIds.includes(userId)) {
+    return projectDoc.id; // Already joined, just return ID
+  }
+
+  // Add user to memberIds
+  await updateDoc(doc(db, PROJECTS_COLLECTION, projectDoc.id), {
+    memberIds: arrayUnion(userId)
+  });
+
+  return projectDoc.id;
+};
+
+/**
+ * 招待コードを再生成
+ */
+export const regenerateInviteCode = async (
+  db: Firestore,
+  projectId: string
+): Promise<string> => {
+  const newCode = generateInviteCode();
+  await updateDoc(doc(db, PROJECTS_COLLECTION, projectId), {
+    inviteCode: newCode
+  });
+  return newCode;
+};
+
+// ... existing updateProject, deleteProject ...
+
+// ... existing addMemberToProject, removeMemberFromProject ...
+
 
 /**
  * プロジェクト取得
