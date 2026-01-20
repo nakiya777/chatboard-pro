@@ -228,26 +228,7 @@ export const useWhiteboard = ({ user, db, projectId, activeDocId, activeDocData,
     }
   };
   
-  const handleDoubleClick = (id: string) => {
-      // Find shape type? We assume caller knows it's clickable or check selectedIds
-      // We need to know if it's text. 
-      // We don't have the list of annotations here easily to lookup by ID synchronously 
-      // unless we pass it or trust the caller.
-      // But we can check selectedIds if it's selected.
-      // Ideally CanvasArea passes the object or we look it up.
-      // For now, let's just setEditingTextId if it acts like text.
-      // Actually, we should probably check if it is text. 
-      // For now, assume this is called on a valid target.
-      // Better: pass the 'type' or object from UI.
-      // Let's assume UI checks type or we just set it and let UI show input if valid.
-      setEditingTextId(id);
-      
-      // Load current text into input
-      // This requires reading the annotation content.
-      // Since we don't have 'annotations' in this hook, we can't pre-fill textInput easily 
-      // unless we fetch it or it's passed.
-      // We'll update the signature of handleDoubleClick to accept (id, text, style).
-  };
+
 
   const handleMouseUp = async () => {
     const shape = drawingShape; setDrawingShape(null); setTransforming(null); setIsPanning(false);
