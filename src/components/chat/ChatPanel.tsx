@@ -1,5 +1,5 @@
-import React, { useRef, useEffect } from 'react';
-import { Send, Reply, Edit2, Trash2, Link as LinkIcon, X, MessageSquare } from 'lucide-react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
+import { Send, Reply, Edit2, Trash2, Link as LinkIcon, X, MessageSquare, Grip } from 'lucide-react';
 import { User } from 'firebase/auth';
 import { Message, Annotation, ColorSystem, ThemeStyles } from '../../types';
 
@@ -37,10 +37,42 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   onClose
 }) => {
   const chatEndRef = useRef<HTMLDivElement>(null);
+  
+  // Resize State
+  const [size, setSize] = useState({ width: 384, height: 600 });
+  const isResizingRef = useRef(false);
+  const startPosRef = useRef({ x: 0, y: 0, w: 0, h: 0 });
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  const handleResizeStart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    isResizingRef.current = true;
+    startPosRef.current = { x: e.clientX, y: e.clientY, w: size.width, h: size.height };
+
+    const handleMouseMove = (ev: MouseEvent) => {
+        if (!isResizingRef.current) return;
+        const dx = startPosRef.current.x - ev.clientX; // Leftward drag increases width
+        const dy = startPosRef.current.y - ev.clientY; // Upward drag increases height
+        
+        setSize({
+            width: Math.max(300, Math.min(800, startPosRef.current.w + dx)),
+            height: Math.max(400, Math.min(window.innerHeight - 100, startPosRef.current.h + dy))
+        });
+    };
+
+    const handleMouseUp = () => {
+        isResizingRef.current = false;
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  }, [size]);
 
   const docMessages = activeDocId ? messages.filter(m => m.docId === activeDocId) : [];
   const validMessages = docMessages.reduce((acc: Message[], m) => {
@@ -56,7 +88,22 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   if (!activeDocId) return null;
 
   return (
-    <div className={`w-96 h-[600px] max-h-[85vh] flex flex-col transition-all overflow-hidden z-20 ${currentTheme.raised} shadow-2xl`} style={{ borderRadius: '2rem', backgroundColor: sys.base }}>
+    <div className={`flex flex-col transition-colors overflow-hidden z-20 ${currentTheme.raised} shadow-2xl relative`} 
+         style={{ 
+             borderRadius: '2rem', 
+             backgroundColor: sys.base,
+             width: size.width,
+             height: size.height
+         }}>
+      
+      {/* Resize Handle (Top-Left) */}
+      <div 
+        onMouseDown={handleResizeStart}
+        className="absolute top-0 left-0 w-8 h-8 cursor-nw-resize flex items-center justify-center text-slate-400 hover:text-slate-600 z-50 hover:bg-black/5 rounded-tl-[2rem] rounded-br-xl"
+        title="Resize"
+      >
+        <Grip size={16} className="-rotate-45" />
+      </div>
       
       {/* Header */}
       <div className="p-5 border-b border-black/5 shrink-0 flex items-center justify-between">

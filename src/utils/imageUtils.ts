@@ -26,7 +26,23 @@ export const processImageToWebP = (
         }
         
         ctx.drawImage(img, 0, 0, w, h);
-        const webpUrl = canvas.toDataURL('image/webp', quality);
+        let webpUrl = 'data:,';
+        try {
+            webpUrl = canvas.toDataURL('image/webp', quality);
+            // Fallback if browser doesn't support webp (returns image/png usually) or if it's empty
+            if (!webpUrl.startsWith('data:image/webp') && !webpUrl.startsWith('data:image/png')) {
+                console.warn('WebP not supported or failed, falling back to JPEG');
+                webpUrl = canvas.toDataURL('image/jpeg', quality);
+            }
+        } catch (e) {
+            console.error('toDataURL failed', e);
+            try {
+                webpUrl = canvas.toDataURL('image/jpeg', quality);
+            } catch (e2) {
+                reject('Failed to convert image');
+                return;
+            }
+        }
         resolve(webpUrl);
       };
       img.onerror = () => reject('Failed to load image');

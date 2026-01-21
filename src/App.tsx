@@ -134,6 +134,7 @@ export default function App({
       <main ref={whiteboard.containerRef} className={`flex-1 ${currentTheme.pressed} relative overflow-hidden transition-all`} style={{ borderRadius: currentTheme.radius, backgroundColor: sys.base }}>
         <CanvasArea
           activeDocId={activeDocId}
+          docUrl={activeDocData?.url}
           sys={sys}
           currentTheme={currentTheme}
           t={t}
@@ -173,7 +174,7 @@ export default function App({
         {isChatOpen && (
           <div className="absolute top-4 right-4 bottom-4 z-30 pointer-events-none flex flex-col justify-end items-end">
              {/* Note: ChatPanel itself will handle click events, wrapper is pointer-events-none to let clicks pass through to canvas where empty */}
-             <div className="pointer-events-auto h-full"> 
+             <div className="pointer-events-auto"> 
                 <ChatPanel
                   activeDocId={activeDocId}
                   messages={messages}

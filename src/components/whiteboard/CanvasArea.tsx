@@ -1,5 +1,5 @@
 import React from 'react';
-import { ZoomIn, ZoomOut, MousePointer, Type, Square, Circle, Star, ArrowUpRight, Edit3, Loader2, Image as ImageIcon, Maximize2, Plus, MessageSquare, RotateCw } from 'lucide-react';
+import { ZoomIn, ZoomOut, MousePointer, Type, Square, Circle, Star, ArrowUpRight, Edit3, Loader2, Image as ImageIcon, Maximize2, Plus, MessageSquare, RotateCw, Minus } from 'lucide-react';
 import { Annotation, ColorSystem, Presence, ThemeStyles } from '../../types';
 import { RenderShape } from './RenderShape';
 import { Handle } from './Handle';
@@ -37,6 +37,7 @@ interface CanvasAreaProps {
   defaults: any;
   svgRef: React.RefObject<SVGSVGElement>;
   // New Props
+  docUrl?: string; // URL of the background document image
   onImageUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   triggerImageUpload: () => void;
   activeImageInputRef: React.RefObject<HTMLInputElement>;
@@ -53,7 +54,8 @@ export const CanvasArea: React.FC<CanvasAreaProps> = ({
   presence, currentDeterminedDocNameLabel, ANNOTATION_COLORS, defaults,
   svgRef,
   onImageUpload, triggerImageUpload, activeImageInputRef, onOpenAddModal,
-  onDoubleClick
+  onDoubleClick,
+  docUrl
 }) => {
   const containerRef = React.useRef<HTMLElement>(null);
   const getSVGPoint = (e: React.MouseEvent | MouseEvent) => {
@@ -106,6 +108,14 @@ export const CanvasArea: React.FC<CanvasAreaProps> = ({
              backgroundSize: `${20*zoom}px ${20*zoom}px`, 
              backgroundPosition: `${pan.x}px ${pan.y}px` 
            }} />
+
+      {/* Background Drawing Image */}
+      {docUrl && (
+        <div className="absolute top-0 left-0 pointer-events-none origin-top-left"
+             style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})` }}>
+           <img src={docUrl} alt="Background Drawing" className="max-w-none block" />
+        </div>
+      )}
 
       {/* activeDoc Header (same) */}
       <div className="absolute top-6 left-6 z-20 flex flex-col gap-2 pointer-events-none">
@@ -178,7 +188,7 @@ export const CanvasArea: React.FC<CanvasAreaProps> = ({
             return (
             <div key={shape.id} className="absolute" style={{ left: visualX, top: visualY, width: absW, height: absH, transform: `rotate(${shape.rotation || 0}deg)` }}>
                {/* Arrow Handles */}
-               {shape.type === 'arrow' && (
+               {(shape.type === 'arrow' || shape.type === 'line') && (
                    <>
                        {/* Arrow Start Handle - relative to normalized box */}
                        {/* If w>0, h>0: Start at 0,0. If w<0, h>0: Start at absW, 0. etc */}
@@ -199,7 +209,7 @@ export const CanvasArea: React.FC<CanvasAreaProps> = ({
                )}
 
                {/* Standard Resize Handles */}
-              {shape.type !== 'pencil' && shape.type !== 'arrow' && (
+              {shape.type !== 'pencil' && shape.type !== 'arrow' && shape.type !== 'line' && (
                 <>
                   <Handle type="nw" cursor="nw-resize" x={0} y={0} zoom={zoom} sys={sys} onDown={(e) => { e.stopPropagation(); setTransforming({ id: shape.id, type: 'resize', handle: 'nw', startPt: getSVGPoint(e), startShape: shape }); }} />
                   <Handle type="ne" cursor="ne-resize" x={absW} y={0} zoom={zoom} sys={sys} onDown={(e) => { e.stopPropagation(); setTransforming({ id: shape.id, type: 'resize', handle: 'ne', startPt: getSVGPoint(e), startShape: shape }); }} />
@@ -252,6 +262,7 @@ export const CanvasArea: React.FC<CanvasAreaProps> = ({
         <ToolBtn active={tool === 'circle'} onClick={() => setTool('circle')} icon={<Circle size={20} />} tip="Circle (C)" theme={currentTheme} sys={sys} />
         <ToolBtn active={tool === 'star'} onClick={() => setTool('star')} icon={<Star size={20} />} tip="Star (S)" theme={currentTheme} sys={sys} />
         <ToolBtn active={tool === 'arrow'} onClick={() => setTool('arrow')} icon={<ArrowUpRight size={20} />} tip="Arrow (A)" theme={currentTheme} sys={sys} />
+        <ToolBtn active={tool === 'line'} onClick={() => setTool('line')} icon={<Minus size={20} />} tip="Line (L)" theme={currentTheme} sys={sys} />
         <ToolBtn active={tool === 'pencil'} onClick={() => setTool('pencil')} icon={<Edit3 size={20} />} tip="Pencil (P)" theme={currentTheme} sys={sys} />
         
         {/* Image Tool */}

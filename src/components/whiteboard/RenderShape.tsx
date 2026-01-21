@@ -54,6 +54,10 @@ export const RenderShape: React.FC<RenderShapeProps> = ({ shape, isPreview, isHi
             const ang = Math.atan2(height||0, width||0); const hl = 24/zoom; const ex = x + (width||0); const ey = y + (height||0);
             return (<g {...glow}><line x1={x} y1={y} x2={ex} y2={ey} {...common} />{!isPreview && <path d={`M ${ex} ${ey} L ${ex - hl * Math.cos(ang - Math.PI/6)} ${ey - hl * Math.sin(ang - Math.PI/6)} M ${ex} ${ey} L ${ex - hl * Math.cos(ang + Math.PI/6)} ${ey - hl * Math.sin(ang + Math.PI/6)}`} fill="none" stroke={common.stroke} strokeWidth={common.strokeWidth} />}</g>);
           }
+          case 'line': {
+            const ex = x + (width||0); const ey = y + (height||0);
+            return (<g {...glow}><line x1={x} y1={y} x2={ex} y2={ey} {...common} /></g>);
+          }
           case 'text': 
             return (
               <foreignObject x={x} y={y} width={Math.max(width||0, 200)} height={Math.max(height||0, 100)} style={{ pointerEvents: 'none' }}>

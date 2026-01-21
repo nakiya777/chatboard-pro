@@ -20,7 +20,7 @@ export interface DocData {
  */
 export interface Annotation {
   id: string;
-  type: 'select' | 'arrow' | 'rect' | 'circle' | 'star' | 'text' | 'pencil' | 'image';
+  type: 'select' | 'arrow' | 'line' | 'rect' | 'circle' | 'star' | 'text' | 'pencil' | 'image';
   x: number;
   y: number;
   width?: number;

@@ -2,6 +2,7 @@ import React, { useState, useCallback, useRef } from 'react';
 import { User } from 'firebase/auth';
 import { Firestore, collection, addDoc, serverTimestamp, updateDoc, doc, deleteDoc } from 'firebase/firestore';
 import { DocData } from '../types';
+import { processImageToWebP } from '../utils/imageUtils';
 
 interface UseAppModalsProps {
     user: User | null;
@@ -20,17 +21,23 @@ export const useAppModals = ({ user, db, projectId, t, setActiveDocId, activeDoc
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const onFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const onFileChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (f) => { 
-        if(f.target?.result) {
-            setModalData(prev => ({ ...prev, fileName: file.name, url: f.target!.result as string, useImage: true })); 
+    
+    try {
+        const webpUrl = await processImageToWebP(file);
+         // Firestore limit is 1MB. Safety margin ~1.3M chars base64
+        if (webpUrl.length > 1300000) { 
+             alert(t('Image too large (Max 1MB)')); 
+             return;
         }
-    };
-    reader.readAsDataURL(file);
-  }, []);
+        setModalData(prev => ({ ...prev, fileName: file.name, url: webpUrl, useImage: true }));
+    } catch (e) {
+        console.error(e);
+        alert('Failed to process image');
+    }
+  }, [t]);
 
   const openAddModal = useCallback(() => {
     setModalMode('add');

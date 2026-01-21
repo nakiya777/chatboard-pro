@@ -82,6 +82,14 @@ export const useWhiteboard = ({ user, db, projectId, activeDocId, activeDocData,
     try {
         const webpUrl = await processImageToWebP(file);
         
+        // Firestore limit is 1MB (1,048,576 bytes). 
+        // Base64 string length * 0.75 is approx byte size.
+        // Safety margin: 900KB approx.
+        if (webpUrl.length > 1300000) { 
+             alert(t('Image too large (Max 1MB)')); 
+             return;
+        }
+
         // Initial display size (smaller logic for UI)
         // We'd ideally want exact dimensions, but processImageToWebP returns string.
         // We can load Image again or let processImageToWebP return dims.
@@ -113,6 +121,7 @@ export const useWhiteboard = ({ user, db, projectId, activeDocId, activeDocData,
         img.src = webpUrl;
     } catch (error) {
         console.error("Image processing failed", error);
+        alert('Failed to upload image: ' + error);
     }
     e.target.value = ''; // Reset input
   };
@@ -236,14 +245,15 @@ export const useWhiteboard = ({ user, db, projectId, activeDocId, activeDocData,
       const isText = shape.type === 'text';
       const isPencil = shape.type === 'pencil';
       const isArrow = shape.type === 'arrow';
+      const isLine = shape.type === 'line';
       let n = { ...shape } as any;
-      if (!isPencil && !isArrow) {
+      if (!isPencil && !isArrow && !isLine) {
         n.x = (shape.width || 0) < 0 ? (shape.x || 0) + (shape.width || 0) : (shape.x || 0); 
         n.y = (shape.height || 0) < 0 ? (shape.y || 0) + (shape.height || 0) : (shape.y || 0);
         n.width = isText ? Math.max(Math.abs(shape.width || 0), 200) : Math.abs(shape.width || 0);
         n.height = isText ? Math.max(Math.abs(shape.height || 0), 100) : Math.abs(shape.height || 0);
       } else if (isPencil) { n.x = 0; n.y = 0; }
-      // For arrow, we keep original x, y, width, height (can be negative) to preserve direction
+      // For arrow and line, we keep original x, y, width, height (can be negative) to preserve direction
 
       
       if (isText || isPencil || n.width > 2 || n.height > 2) {
