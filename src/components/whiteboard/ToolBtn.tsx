@@ -15,8 +15,8 @@ export const ToolBtn: React.FC<ToolBtnProps> = ({ active, onClick, icon, tip, th
     <button 
       onClick={onClick} 
       title={tip} 
-      className={`p-5 rounded-[1.5rem] transition-all ${active ? theme.pressed : 'opacity-40 hover:opacity-100 hover:scale-110'}`} 
-      style={{ color: active ? sys.accent : sys.accent + '80' }}
+      className={`p-5 rounded-[1.5rem] transition-all ${active ? theme.pressed : 'opacity-50 hover:opacity-100 hover:scale-110'}`} 
+      style={{ color: active ? sys.accent : sys.text }}
     >
       {icon}
     </button>

@@ -25,12 +25,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
   openEditModal, openAddModal, setIsSettingsOpen, onBackToProjects
 }) => {
   return (
-    <aside className={`${isSidebarCollapsed ? 'w-20' : 'w-80'} ${currentTheme.raised} flex flex-col shrink-0 overflow-hidden z-30 transition-all duration-500`} style={{ borderRadius: currentTheme.radius, backgroundColor: sys.base }}>
+    <aside className={`${isSidebarCollapsed ? 'w-20' : 'w-80'} ${currentTheme.raised} flex flex-col shrink-0 overflow-hidden z-30 transition-all duration-500`} style={{ borderRadius: currentTheme.radius }}>
       <div className={`p-6 border-b border-white/10 flex flex-col gap-4`}>
         {!isSidebarCollapsed && (
           <button onClick={onBackToProjects} className={`flex items-center gap-2 text-xs font-bold transition-all ${sys.textSecondary} hover:${currentTheme.textClass} -ml-2 px-2 py-1 rounded-lg hover:bg-black/5`}>
             <ArrowLeft size={14} />
-            <span>Projects</span>
+            <span>{t('documents')}</span>
           </button>
         )}
         <div className={`flex items-center ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}>

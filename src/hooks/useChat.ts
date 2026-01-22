@@ -40,11 +40,41 @@ export const useChat = ({ user, db, projectId, activeDocId, messages }: UseChatP
         await deleteDoc(doc(db, 'projects', projectId, 'messages', id));
     }, [db, projectId]);
 
+    const handleLinkAnnotation = useCallback(async (annotationId: string) => {
+        if (!linkModeMsgId || !db || !projectId) return;
+        try {
+            const targetMsg = messages.find(m => m.id === linkModeMsgId);
+            if (targetMsg) {
+                const currentIds = targetMsg.annotationIds || [];
+                if (!currentIds.includes(annotationId)) {
+                    await updateDoc(doc(db, 'projects', projectId, 'messages', linkModeMsgId), { 
+                        annotationIds: [...currentIds, annotationId] 
+                    });
+                }
+            }
+            setLinkModeMsgId(null);
+        } catch (err) { console.error("Link Error", err); }
+    }, [linkModeMsgId, db, projectId, messages]);
+
+    const handleUnlinkAnnotation = useCallback(async (msgId: string, annotationId: string) => {
+        if (!db || !projectId) return;
+        try {
+            const targetMsg = messages.find(m => m.id === msgId);
+            if (targetMsg && targetMsg.annotationIds) {
+                const currentIds = targetMsg.annotationIds;
+                // Use optimistic update logic or just Firestore update
+                await updateDoc(doc(db, 'projects', projectId, 'messages', msgId), { 
+                    annotationIds: currentIds.filter(id => id !== annotationId) 
+                });
+            }
+        } catch (err) { console.error("Unlink Error", err); }
+    }, [db, projectId, messages]);
+
     return {
         chatInput, setChatInput,
         replyToId, setReplyToId,
         editingMessageId, setEditingMessageId,
         linkModeMsgId, setLinkModeMsgId,
-        handleSendChat, handleDeleteMessage
+        handleSendChat, handleDeleteMessage, handleLinkAnnotation, handleUnlinkAnnotation
     };
 };

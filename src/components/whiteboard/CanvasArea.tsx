@@ -43,6 +43,9 @@ interface CanvasAreaProps {
   activeImageInputRef: React.RefObject<HTMLInputElement>;
   onOpenAddModal: () => void;
   onDoubleClick: (id: string, text?: string, style?: any) => void;
+  linkModeMsgId?: string | null;
+  onLinkAnnotation?: (id: string) => void;
+  onToggleArrow?: (annotation: Annotation) => void;
 }
 
 export const CanvasArea: React.FC<CanvasAreaProps> = ({
@@ -55,7 +58,8 @@ export const CanvasArea: React.FC<CanvasAreaProps> = ({
   svgRef,
   onImageUpload, triggerImageUpload, activeImageInputRef, onOpenAddModal,
   onDoubleClick,
-  docUrl
+  docUrl,
+  linkModeMsgId, onLinkAnnotation, onToggleArrow
 }) => {
   const containerRef = React.useRef<HTMLElement>(null);
   const getSVGPoint = (e: React.MouseEvent | MouseEvent) => {
@@ -87,7 +91,7 @@ export const CanvasArea: React.FC<CanvasAreaProps> = ({
         
         <button
             onClick={onOpenAddModal}
-            className={`px-6 py-3 rounded-xl ${currentTheme.raisedSm} bg-indigo-600 text-white font-bold flex items-center gap-2 shadow-lg hover:bg-indigo-700 hover:scale-105 transition-all cursor-pointer pointer-events-auto`}
+            className={`px-6 py-3 rounded-xl ${currentTheme.raisedSm} !bg-indigo-600 !text-white font-bold flex items-center gap-2 shadow-lg hover:!bg-indigo-700 hover:scale-105 transition-all cursor-pointer pointer-events-auto`}
         >
             <Plus size={20} />
             チャットスレッドの新規作成
@@ -145,20 +149,42 @@ export const CanvasArea: React.FC<CanvasAreaProps> = ({
           {annotations.filter(a => a.docId === activeDocId && a.status !== 'deleted').map(ann => (
               <g key={ann.id} 
                  onMouseDown={(e) => {
+                     if (linkModeMsgId) {
+                         e.stopPropagation();
+                         e.preventDefault();
+                         return;
+                     }
                      if (tool === 'select') {
                          e.stopPropagation();
-                         setSelectedIds([ann.id]);
-                         setActiveAnnotationIds([ann.id]);
-                         setTransforming({ id: ann.id, type: 'move', startPt: getSVGPoint(e), startShape: ann });
+                         if (e.shiftKey) {
+                             const isSelected = selectedIds.includes(ann.id);
+                             const newSelection = isSelected 
+                                ? selectedIds.filter(id => id !== ann.id)
+                                : [...selectedIds, ann.id];
+                             setSelectedIds(newSelection);
+                             setActiveAnnotationIds(newSelection);
+                         } else {
+                             setSelectedIds([ann.id]);
+                             setActiveAnnotationIds([ann.id]);
+                             setTransforming({ id: ann.id, type: 'move', startPt: getSVGPoint(e), startShape: ann });
+                         }
                      }
+                 }}
+                 onClick={(e) => {
+                    e.stopPropagation();
+                    if (linkModeMsgId && onLinkAnnotation) {
+                        onLinkAnnotation(ann.id);
+                        setSelectedIds([]);
+                        return;
+                    }
+                    if (ann.type === 'text') {
+                       onDoubleClick(ann.id, ann.text, ann);
+                    }
                  }}
                  onDoubleClick={(e) => {
                     e.stopPropagation();
-                    if (ann.type === 'text') {
-                        onDoubleClick(ann.id, ann.text, ann);
-                    }
                  }}
-                 style={{ cursor: tool === 'select' ? 'move' : 'default' }}
+                 style={{ cursor: linkModeMsgId ? 'alias' : (tool === 'select' ? 'move' : 'default') }}
               >
                   <RenderShape 
                     shape={ann} 
@@ -280,9 +306,9 @@ export const CanvasArea: React.FC<CanvasAreaProps> = ({
       
       </div>
 
-      {/* Floating Action Menu for Selection */}
-      {selectedShapes.length > 0 && (
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 bg-white rounded-2xl shadow-2xl p-2 animate-in slide-in-from-bottom-4 flex items-center gap-2 border border-slate-100">
+      {/* Floating Action Menu for Selection / Active Tool */}
+      {(selectedShapes.length > 0 || ['text', 'rect', 'circle', 'star', 'arrow', 'line', 'pencil'].includes(tool)) && (
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 rounded-[2rem] shadow-2xl p-2 animate-in slide-in-from-bottom-4 flex items-center gap-2 border border-white/20 z-40 transition-all" style={{ backgroundColor: 'rgba(255,255,255,0.65)', backdropFilter: 'blur(20px)' }}>
            <div className="flex items-center justify-center gap-4 py-1 px-4"> 
             <div className="flex gap-2.5">
                 {ANNOTATION_COLORS.map(c => (
@@ -298,9 +324,9 @@ export const CanvasArea: React.FC<CanvasAreaProps> = ({
                     <div className="w-[1px] h-6 bg-slate-200" />
                     <button 
                         onClick={() => {
-                            // Quick toggle for arrow point. 
-                            // Since we don't have updateDoc here easily (could enable it via props but lets keep logic simple),
-                            // We can use a trick or better: Pass the db/update logic via a dedicated prop or generic 'onUpdateShape'.
+                            if (onToggleArrow && selectedShapes.length > 0) {
+                                onToggleArrow(selectedShapes[0]);
+                            }
                         }}
                         className={`p-2 rounded-xl transition-all duration-200 hover:bg-slate-100 text-slate-600 ${selectedShapes[0].arrowPoint ? 'bg-slate-100 text-blue-500' : ''}`}
                         title="Toggle Pointer Arrow"

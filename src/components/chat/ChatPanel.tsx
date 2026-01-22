@@ -25,7 +25,8 @@ interface ChatPanelProps {
   annotations: Annotation[];
   setSelectedIds: (ids: string[]) => void;
   setActiveAnnotationIds: (ids: string[]) => void;
-  onClose: () => void; // New prop
+  onClose: () => void;
+  handleUnlinkAnnotation: (msgId: string, annId: string) => void;
 }
 
 export const ChatPanel: React.FC<ChatPanelProps> = ({
@@ -34,7 +35,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   replyToId, setReplyToId, editingMessageId, setEditingMessageId,
   handleDeleteMessage, linkModeMsgId, setLinkModeMsgId,
   annotations, setSelectedIds, setActiveAnnotationIds,
-  onClose
+  onClose, handleUnlinkAnnotation
 }) => {
   const chatEndRef = useRef<HTMLDivElement>(null);
   
@@ -91,7 +92,6 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     <div className={`flex flex-col transition-colors overflow-hidden z-20 ${currentTheme.raised} shadow-2xl relative`} 
          style={{ 
              borderRadius: '2rem', 
-             backgroundColor: sys.base,
              width: size.width,
              height: size.height
          }}>
@@ -126,7 +126,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
                 <div className="p-4 rounded-full bg-slate-50">
                     <MessageSquare size={32} />
                 </div>
-                <span className="text-xs font-medium">No messages yet</span>
+                <span className="text-xs font-medium">{t('noMessages')}</span>
             </div>
         )}
 
@@ -163,12 +163,22 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
                       if (!ann) return null;
                       const typeIcon = { rect: '▀', circle: '●', text: 'T', arrow: '→', pencil: '✎', star: '★' }[ann.type] || '?';
                       return (
-                        <button key={aid} 
-                          onClick={() => { setSelectedIds([aid]); setActiveAnnotationIds([aid]); }}
+                        <div key={aid} 
                           className={`text-[9px] px-2 py-1 rounded-md flex items-center gap-1 transition-colors ${isSelf ? 'bg-white/20 hover:bg-white/30 text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-600'}`}
                         >
-                          {typeIcon} <span>{ann.type}</span>
-                        </button>
+                          <button onClick={() => { setSelectedIds([aid]); setActiveAnnotationIds([aid]); }} className="flex items-center gap-1 hover:underline">
+                            {typeIcon} <span>{ann.type}</span>
+                          </button>
+                          {isSelf && (
+                             <button 
+                               onClick={(e) => { e.stopPropagation(); handleUnlinkAnnotation(m.id, aid); }} 
+                               className="hover:text-red-300 ml-1 p-0.5 rounded-full hover:bg-white/20" 
+                               title={t('cancelLink')}
+                             >
+                                <X size={10} />
+                             </button>
+                          )}
+                        </div>
                       );
                     })}
                   </div>
@@ -179,8 +189,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
                   <button onClick={() => setReplyToId(m.id)} className={`p-1.5 rounded-full bg-white text-slate-500 shadow-md hover:scale-110 transition-transform border border-slate-100`} title={t('reply')}><Reply size={12} /></button>
                   {isSelf && (
                     <>
-                      <button onClick={() => { setEditingMessageId(m.id); setChatInput(m.content); setReplyToId(null); }} className={`p-1.5 rounded-full bg-white text-blue-500 shadow-md hover:scale-110 transition-transform border border-slate-100`}><Edit2 size={12} /></button>
-                      <button onClick={() => handleDeleteMessage(m.id)} className={`p-1.5 rounded-full bg-white text-red-500 shadow-md hover:scale-110 transition-transform border border-slate-100`}><Trash2 size={12} /></button>
+                      <button onClick={() => { setEditingMessageId(m.id); setChatInput(m.content); setReplyToId(null); }} className={`p-1.5 rounded-full bg-white text-blue-500 shadow-md hover:scale-110 transition-transform border border-slate-100`} title={t('editMessage')}><Edit2 size={12} /></button>
+                      <button onClick={() => handleDeleteMessage(m.id)} className={`p-1.5 rounded-full bg-white text-red-500 shadow-md hover:scale-110 transition-transform border border-slate-100`} title={t('deleteMessage')}><Trash2 size={12} /></button>
                     </>
                   )}
                   {isSelf && (
@@ -200,13 +210,13 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       <div className={`p-4 shrink-0 mt-auto bg-white/50 backdrop-blur-sm`} style={{ borderTop: '1px solid rgba(0,0,0,0.03)' }}>
         {replyToId && (
           <div className="mb-2 flex items-center justify-between text-[10px] bg-slate-100 p-2 rounded-lg text-slate-500 animate-in slide-in-from-bottom-2">
-            <span className="flex items-center gap-1"><Reply size={10}/> Replying...</span>
+            <span className="flex items-center gap-1"><Reply size={10}/> {t('replying')}</span>
             <button onClick={() => setReplyToId(null)} className="hover:text-slate-800"><X size={12} /></button>
           </div>
         )}
         {editingMessageId && (
           <div className="mb-2 flex items-center justify-between text-[10px] bg-blue-50 p-2 rounded-lg text-blue-500 font-bold border border-blue-100 animate-in slide-in-from-bottom-2">
-            <span className="flex items-center gap-1"><Edit2 size={10}/> Updating...</span>
+            <span className="flex items-center gap-1"><Edit2 size={10}/> {t('updating')}</span>
             <button onClick={() => { setEditingMessageId(null); setChatInput(""); }} className="hover:text-blue-700"><X size={12} /></button>
           </div>
         )}
@@ -216,7 +226,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
             value={chatInput}
             onChange={(e) => setChatInput(e.target.value)}
             onKeyDown={(e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendChat(); } }}
-            placeholder={activeDocId ? "Type a message..." : t('selectDocFirst')}
+            placeholder={activeDocId ? t('writeMsg') : t('selectDocFirst')}
             disabled={!activeDocId}
             className="flex-1 bg-transparent border-none focus:ring-0 text-sm font-medium px-4 py-2 text-slate-700 placeholder:text-slate-400"
           />

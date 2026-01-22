@@ -95,18 +95,38 @@ export default function App({
     const styles: ThemeStyles = { radius: br, accent: sys.accent, textClass: sys.text, baseColor: sys.base, raised: '', raisedSm: '', pressed: '' };
     
     if (theme === 'neumorphism') {
-      styles.raised = `shadow-[8px_8px_16px_${sys.shadow},-8px_-8px_16px_${sys.highlight}]`;
-      styles.raisedSm = `shadow-[4px_4px_8px_${sys.shadow},-4px_-4px_8px_${sys.highlight}]`;
-      styles.pressed = `shadow-[inset_6px_6px_12px_${sys.shadow},inset_-6px_-6px_12px_${sys.highlight}]`;
+      styles.radius = '16px';
+      styles.textClass = 'font-sans tracking-normal';
+      styles.raised = `shadow-[5px_5px_10px_${sys.shadow},-5px_-5px_10px_${sys.highlight}] active:shadow-[inset_5px_5px_10px_${sys.shadow},inset_-5px_-5px_10px_${sys.highlight}] transition-all duration-300 border border-white/20 bg-[${sys.base}]`;
+      styles.raisedSm = `shadow-[3px_3px_6px_${sys.shadow},-3px_-3px_6px_${sys.highlight}] border border-white/20 bg-[${sys.base}]`;
+      styles.pressed = `shadow-[inset_5px_5px_10px_${sys.shadow},inset_-5px_-5px_10px_${sys.highlight}] bg-[${sys.base}]`;
+    
     } else if (theme === 'claymorphism') {
-      styles.raised = `shadow-[12px_12px_24px_${sys.shadow},-12px_-12px_24px_${sys.highlight},inset_8px_8px_16px_rgba(255,255,255,${isDark ? 0.1 : 0.5}),inset_-8px_-8px_16px_rgba(0,0,0,0.05)]`;
-      styles.raisedSm = `shadow-[6px_6px_12px_${sys.shadow},-6px_-6px_12px_${sys.highlight},inset_4px_4px_8px_rgba(255,255,255,${isDark ? 0.1 : 0.5})]`;
-      styles.pressed = `shadow-[inset_8px_8px_16px_${sys.shadow},inset_-8px_-8px_16px_${sys.highlight}]`;
+      styles.radius = '32px';
+      styles.textClass = 'font-sans font-bold tracking-tight';
+      styles.raised = `shadow-[8px_8px_16px_${sys.shadow},inset_4px_4px_8px_rgba(255,255,255,0.5),inset_-4px_-4px_8px_rgba(0,0,0,0.05)] hover:scale-105 transition-all duration-300 bg-[${sys.base}]`;
+      styles.raisedSm = `shadow-[4px_4px_8px_${sys.shadow},inset_2px_2px_4px_rgba(255,255,255,0.5),inset_-2px_-2px_4px_rgba(0,0,0,0.05)] bg-[${sys.base}]`;
+      styles.pressed = `shadow-[inset_6px_6px_10px_${sys.shadow},inset_-6px_-6px_10px_${sys.highlight}] scale-95 bg-[${sys.base}]`;
+    
+    } else if (theme === 'parallax') {
+      styles.radius = '24px';
+      // Parallax Revival: Deep depth, Soft float, Motion
+      const shadowColor = isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.15)';
+      const hoverShadowColor = isDark ? 'rgba(0,0,0,0.7)' : 'rgba(0,0,0,0.25)';
+      styles.raised = `shadow-[0_12px_40px_-8px_${shadowColor}] hover:shadow-[0_22px_50px_-8px_${hoverShadowColor}] hover:-translate-y-1.5 active:translate-y-0 active:scale-[0.99] transition-all duration-500 ease-out border border-white/40 bg-white/60 backdrop-blur-md after:content-[''] after:absolute after:inset-0 after:rounded-[inherit] after:shadow-[inset_0_1px_1px_rgba(255,255,255,0.6)] after:pointer-events-none`;
+      styles.raisedSm = `shadow-[0_6px_20px_-4px_${shadowColor}] hover:shadow-[0_12px_30px_-4px_${hoverShadowColor}] hover:-translate-y-1 active:translate-y-0 transition-all duration-500 ease-out border border-white/40 bg-white/60 backdrop-blur-sm`;
+      styles.pressed = `shadow-inner scale-[0.98] duration-200 border border-black/5 bg-black/5`;
+    
     } else {
-      styles.raised = `${isDark ? 'bg-white/10' : 'bg-white/40'} backdrop-blur-xl border border-white/30 shadow-xl shadow-black/10`;
-      styles.raisedSm = `${isDark ? 'bg-white/10' : 'bg-white/30'} backdrop-blur-md border border-white/30 shadow-lg`;
-      styles.pressed = 'bg-black/10 backdrop-blur-sm border border-black/10 shadow-inner';
+      // Glassmorphism (Default)
+      styles.radius = '20px';
+      styles.textClass = 'font-sans tracking-wide text-shadow-sm';
+      // High transparency for glass feel
+      styles.raised = `${isDark ? 'bg-white/5' : 'bg-white/10'} backdrop-blur-xl border border-white/20 shadow-xl shadow-black/5`;
+      styles.raisedSm = `${isDark ? 'bg-white/5' : 'bg-white/10'} backdrop-blur-md border border-white/20 shadow-lg`;
+      styles.pressed = 'bg-black/10 backdrop-blur-sm border border-black/5 shadow-inner';
     }
+
     return styles;
   }, [theme, colorSystem, sys]);
 
@@ -168,6 +188,9 @@ export default function App({
           activeImageInputRef={whiteboard.activeImageInputRef}
           onOpenAddModal={modals.openAddModal}
           onDoubleClick={whiteboard.handleDoubleClick}
+          onToggleArrow={whiteboard.onToggleArrow}
+          linkModeMsgId={chat.linkModeMsgId}
+          onLinkAnnotation={chat.handleLinkAnnotation}
         />
 
         {/* Floating Chat Panel */}
@@ -195,6 +218,7 @@ export default function App({
                   annotations={annotations}
                   setSelectedIds={whiteboard.setSelectedIds}
                   setActiveAnnotationIds={whiteboard.setActiveAnnotationIds}
+                  handleUnlinkAnnotation={chat.handleUnlinkAnnotation}
                   onClose={() => setIsChatOpen(false)}
                 />
              </div>

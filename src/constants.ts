@@ -1,11 +1,24 @@
 import { ColorSystem } from './types';
 
-export const ANNOTATION_COLORS = ['#ffffff', '#3b82f6', '#000000', '#10b981', '#f59e0b', '#ef4444'];
+export const ANNOTATION_COLORS = ['#ffffff', '#3b82f6', '#000000', '#10b981', '#f59e0b', '#ef4444', '#a855f7', '#ec4899', '#06b6d4', '#84cc16', '#6366f1'];
 
 export const THEME_MODES: Record<string, { name: string }> = {
   neumorphism: { name: 'Neu 2.0' },
   claymorphism: { name: 'Clay 3D' },
-  glassmorphism: { name: 'Glass' }
+  glassmorphism: { name: 'Glass' },
+  parallax: { name: 'Parallax Revival' }
+};
+
+const SHADOW_FLOAT = 'shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] hover:-translate-y-1 hover:shadow-[0_20px_50px_-10px_rgba(0,0,0,0.25)] transition-all duration-500 ease-out border border-white/40 backdrop-blur-md bg-white/80';
+const SHADOW_PRESSED = 'shadow-inner scale-[0.98] translate-y-0 duration-200';
+
+export const THEME_STYLES: Record<string, any> = {
+  // We need to inject styles into THEME_MODES or handle it elsewhere?
+  // `THEME_MODES` in App.tsx just iterates keys. 
+  // But wait, where are the styles defined?
+  // They are NOT in `constants.ts`! 
+  // They are usually in `App.tsx` or `types.ts`?
+  // Let's check `App.tsx`.
 };
 
 export const COLOR_SYSTEMS: Record<string, ColorSystem> = {
@@ -15,8 +28,8 @@ export const COLOR_SYSTEMS: Record<string, ColorSystem> = {
     accent: '#4F46E5', // Indigo 600
     shadow: '#CBD5E1', // Slate 300
     highlight: '#FFFFFF',
-    text: 'text-slate-900',
-    textSecondary: 'text-slate-500'
+    text: 'text-slate-950', // Darker
+    textSecondary: 'text-slate-600' // Darker
   },
   midnight: { 
     name: 'Nebula', 
@@ -25,7 +38,7 @@ export const COLOR_SYSTEMS: Record<string, ColorSystem> = {
     shadow: '#020617', // Slate 950
     highlight: '#1E293B', // Slate 800
     text: 'text-white',
-    textSecondary: 'text-slate-400'
+    textSecondary: 'text-slate-300' // Lighter
   },
   natural: { 
     name: 'Sage Forest', 
@@ -34,7 +47,7 @@ export const COLOR_SYSTEMS: Record<string, ColorSystem> = {
     shadow: '#D1FAE5', // Emerald 100
     highlight: '#FFFFFF',
     text: 'text-emerald-950',
-    textSecondary: 'text-emerald-700'
+    textSecondary: 'text-emerald-700' // Darker
   },
   warm: { 
     name: 'Clay Sunset', 
@@ -43,7 +56,7 @@ export const COLOR_SYSTEMS: Record<string, ColorSystem> = {
     shadow: '#FECDD3', // Rose 200
     highlight: '#FFFFFF',
     text: 'text-rose-950',
-    textSecondary: 'text-rose-700'
+    textSecondary: 'text-rose-700' // Darker
   },
   ocean: { 
     name: 'Ocean Breeze', 
@@ -52,7 +65,7 @@ export const COLOR_SYSTEMS: Record<string, ColorSystem> = {
     shadow: '#CFFAFE', // Cyan 100
     highlight: '#FFFFFF',
     text: 'text-cyan-950',
-    textSecondary: 'text-cyan-700'
+    textSecondary: 'text-cyan-800' // Darker
   },
   sunlight: { 
     name: 'Sunny Day', 
@@ -61,13 +74,22 @@ export const COLOR_SYSTEMS: Record<string, ColorSystem> = {
     shadow: '#FEF08A', // Yellow 200
     highlight: '#FFFFFF',
     text: 'text-yellow-950',
-    textSecondary: 'text-yellow-700'
+    textSecondary: 'text-yellow-800' // Darker
+  },
+  harmony: {
+    name: 'Nature Harmony',
+    base: '#FDFBF7', // warm cream
+    accent: '#606C38', // olive green
+    shadow: '#E6E2D3', 
+    highlight: '#FFFFFF',
+    text: 'text-stone-900', // Darker
+    textSecondary: 'text-stone-600' // Darker
   }
 };
 
 export const TRANSLATIONS: Record<string, any> = {
   ja: {
-    documents: 'プロジェクト', ready: '準備完了', preferences: '設定', visualStyle: 'デザインテーマ', colorTone: 'カラーテーマ', language: '表示言語', apply: '設定を適用', setupDoc: '新規スレッドの作成', editDoc: '情報の修正', docTitleLabel: '名称:', threadSubject: '議論の主題（スレッド名）', initialMsg: '最初のメッセージ内容', selectFile: '図面を選択', changeFile: '変更', useImageLabel: '図面（画像）を使用する', noImageLabel: '図面なし（白紙）で使用', startProject: 'スレッドを開始', updateInfo: '情報を更新', deleteDoc: 'ドキュメントを削除', writeMsg: 'メッセージを入力...', replyTo: '返信先:', discussionStream: '議論ストリーム', globalWorkspace: 'ワークスペース', live: 'ライブ', projectReady: 'プロジェクト準備完了', welcomeMsg: 'まずは右上の「＋」から議論を始めましょう。', addedItem: 'を追加しました', updatedText: 'テキストを更新しました', whiteboard: 'ホワイトボード', toolSelect: '選択', toolArrow: '矢印', toolLine: '直線', toolRect: '矩形', toolCircle: '円', toolStar: '星型', toolText: 'テキスト', toolPencil: '自由線', textPlaceholder: 'ここに入力してください', fontSize: 'サイズ', save: '設定を保存', cancel: 'キャンセル', edit: '編集', delete: '削除', edited: '(編集済)', linkedTo: '箇所とリンク中', cancelLink: '紐付けを解除', editTextTitle: 'テキストの詳細編集',
+    documents: 'プロジェクト', ready: '準備完了', preferences: '設定', visualStyle: 'デザインテーマ', colorTone: 'カラーテーマ', language: '表示言語', apply: '設定を適用', setupDoc: '新規スレッドの作成', editDoc: '情報の修正', docTitleLabel: '名称:', threadSubject: '議論の主題（スレッド名）', initialMsg: '最初のメッセージ内容', selectFile: '図面を選択', changeFile: '変更', useImageLabel: '図面（画像）を使用する', noImageLabel: '図面なし（白紙）で使用', startProject: 'スレッドを開始', updateInfo: '情報を更新', deleteDoc: 'ドキュメントを削除', writeMsg: 'メッセージを入力...', replyTo: '返信先:', discussionStream: '議論ストリーム', globalWorkspace: 'ワークスペース', live: 'ライブ', projectReady: 'プロジェクト準備完了', welcomeMsg: 'まずは右上の「＋」から議論を始めましょう。', addedItem: 'を追加しました', updatedText: 'テキストを更新しました', whiteboard: 'ホワイトボード', toolSelect: '選択', toolArrow: '矢印', toolLine: '直線', toolRect: '矩形', toolCircle: '円', toolStar: '星型', toolText: 'テキスト', toolPencil: '自由線', textPlaceholder: 'ここに入力してください', fontSize: 'サイズ', save: '設定を保存', cancel: 'キャンセル', edit: '編集', delete: '削除', edited: '(編集済)', linkedTo: '箇所とリンク中', cancelLink: '紐付けを解除', editTextTitle: 'テキストの詳細編集', reply: '返信', editMessage: 'メッセージを編集', deleteMessage: 'メッセージを削除', linkAnnotation: '図形とリンク', noMessages: 'メッセージはありません', replying: '返信中...', updating: '編集中...', selectDocFirst: 'スレッドを選択してください',
     // Added for Settings
     account: 'アカウント情報', name: '表示名', organization: '組織名', logout: 'ログアウト', backToProjects: 'プロジェクト一覧に戻る', saved: '保存しました', toolImage: '画像', close: '設定を完了',
     // Added for Setup
@@ -82,14 +104,14 @@ export const TRANSLATIONS: Record<string, any> = {
     connectionFailed: '接続に失敗しました: ',
     invalidConfig: '設定が無効です',
     // Themes and Colors
-    theme_neumorphism: 'ニュー 2.0', theme_claymorphism: 'クレイ 3D', theme_glassmorphism: 'ガラス',
+    theme_neumorphism: 'ニュー 2.0', theme_claymorphism: 'クレイ 3D', theme_glassmorphism: 'ガラス', theme_parallax: 'パララックス・リバイバル',
     color_standard: 'SaaS ライト', color_midnight: 'ネビュラ', color_natural: 'セージ・フォレスト', color_warm: 'クレイ・サンセット',
-    color_ocean: 'オーシャン・ブリーズ', color_sunlight: 'サニー・デイ',
+    color_ocean: 'オーシャン・ブリーズ', color_sunlight: 'サニー・デイ', color_harmony: 'ネイチャーハーモニー',
     // Languages
     lang_ja: '日本語', lang_en: '英語', lang_vi: 'ベトナム語'
   },
   en: {
-    documents: 'Projects', ready: 'Ready', preferences: 'Preferences', visualStyle: 'Visual Style', colorTone: 'Color Tone', language: 'Language', apply: 'Apply Changes', setupDoc: 'Create New Thread', editDoc: 'Edit Metadata', docTitleLabel: 'Name:', threadSubject: 'Thread Subject', initialMsg: 'Initial Message', selectFile: 'Select Drawing', changeFile: 'Change', useImageLabel: 'Use Drawing (Image)', noImageLabel: 'No Image (Blank)', startProject: 'Start Thread', updateInfo: 'Update Info', deleteDoc: 'Delete Doc', writeMsg: 'Write a message...', replyTo: 'REPLY TO:', discussionStream: 'Discussion Stream', globalWorkspace: 'Workspace', live: 'LIVE', projectReady: 'Project Ready', welcomeMsg: 'Start by clicking "+" in the sidebar.', addedItem: 'added ', updatedText: 'updated text', whiteboard: 'Whiteboard', toolSelect: 'Select', toolArrow: 'Arrow', toolLine: 'Line', toolRect: 'Rectangle', toolCircle: 'Circle', toolStar: 'Star', toolText: 'Text Block', toolPencil: 'Pencil', textPlaceholder: 'Type something...', fontSize: 'Size', save: 'Save', cancel: 'Cancel', edit: 'Edit', delete: 'Delete', edited: '(edited)', linkedTo: 'marks linked', cancelLink: 'Unlink', editTextTitle: 'Rich Text Editor',
+    documents: 'Projects', ready: 'Ready', preferences: 'Preferences', visualStyle: 'Visual Style', colorTone: 'Color Tone', language: 'Language', apply: 'Apply Changes', setupDoc: 'Create New Thread', editDoc: 'Edit Metadata', docTitleLabel: 'Name:', threadSubject: 'Thread Subject', initialMsg: 'Initial Message', selectFile: 'Select Drawing', changeFile: 'Change', useImageLabel: 'Use Drawing (Image)', noImageLabel: 'No Image (Blank)', startProject: 'Start Thread', updateInfo: 'Update Info', deleteDoc: 'Delete Doc', writeMsg: 'Write a message...', replyTo: 'REPLY TO:', discussionStream: 'Discussion Stream', globalWorkspace: 'Workspace', live: 'LIVE', projectReady: 'Project Ready', welcomeMsg: 'Start by clicking "+" in the sidebar.', addedItem: 'added ', updatedText: 'updated text', whiteboard: 'Whiteboard', toolSelect: 'Select', toolArrow: 'Arrow', toolLine: 'Line', toolRect: 'Rectangle', toolCircle: 'Circle', toolStar: 'Star', toolText: 'Text Block', toolPencil: 'Pencil', textPlaceholder: 'Type something...', fontSize: 'Size', save: 'Save', cancel: 'Cancel', edit: 'Edit', delete: 'Delete', edited: '(edited)', linkedTo: 'marks linked', cancelLink: 'Unlink', editTextTitle: 'Rich Text Editor', reply: 'Reply', editMessage: 'Edit Message', deleteMessage: 'Delete Message', linkAnnotation: 'Link to Shape', noMessages: 'No messages yet', replying: 'Replying...', updating: 'Updating...', selectDocFirst: 'Select a thread first',
     // Added for Settings
     account: 'Account', name: 'Display Name', organization: 'Organization', logout: 'Logout', backToProjects: 'Back to Projects', saved: 'Saved', toolImage: 'Image', close: 'Done',
     // Added for Setup
@@ -104,14 +126,14 @@ export const TRANSLATIONS: Record<string, any> = {
     connectionFailed: 'Connection Failed: ',
     invalidConfig: 'Invalid Config',
     // Themes and Colors
-    theme_neumorphism: 'Neu 2.0', theme_claymorphism: 'Clay 3D', theme_glassmorphism: 'Glass',
+    theme_neumorphism: 'Neu 2.0', theme_claymorphism: 'Clay 3D', theme_glassmorphism: 'Glass', theme_parallax: 'Parallax Revival',
     color_standard: 'SaaS Light', color_midnight: 'Nebula', color_natural: 'Sage Forest', color_warm: 'Clay Sunset',
-    color_ocean: 'Ocean Breeze', color_sunlight: 'Sunny Day',
+    color_ocean: 'Ocean Breeze', color_sunlight: 'Sunny Day', color_harmony: 'Nature Harmony',
     // Languages
     lang_ja: 'Japanese', lang_en: 'English', lang_vi: 'Vietnamese'
   },
   vi: {
-    documents: 'Dự án', ready: 'Sẵn sàng', preferences: 'Cài đăt', visualStyle: 'Giao diện', colorTone: 'Màu sắc', language: 'Ngôn ngữ', apply: 'Áp dụng', setupDoc: 'Tạo chủ đề mới', editDoc: 'Chỉnh sửa thông tin', docTitleLabel: 'Tên:', threadSubject: 'Chủ đề thảo luận', initialMsg: 'Tin nhắn đầu tiên', selectFile: 'Chọn bản vẽ', changeFile: 'Thay đổi', useImageLabel: 'Sử dụng bản vẽ (Hình ảnh)', noImageLabel: 'Không dùng ảnh (Trắng)', startProject: 'Bắt đầu', updateInfo: 'Cập nhật', deleteDoc: 'Xóa', writeMsg: 'Nhập tin nhắn...', replyTo: 'Trả lời:', discussionStream: 'Luồng thảo luận', globalWorkspace: 'Không gian làm việc', live: 'TRỰC TIẾP', projectReady: 'Dự án đã sẵn sàng', welcomeMsg: 'Bắt đầu bằng cách nhấn "+" ở thanh bên.', addedItem: 'đã thêm ', updatedText: 'cập nhật văn bản', whiteboard: 'Bảng trắng', toolSelect: 'Chọn', toolArrow: 'Mũi tên', toolLine: 'Đường kẻ', toolRect: 'Hình chữ nhật', toolCircle: 'Hình tròn', toolStar: 'Ngôi sao', toolText: 'Văn bản', toolPencil: 'Bút chì', textPlaceholder: 'Nhập nội dung...', fontSize: 'Kích cỡ', save: 'Lưu', cancel: 'Hủy', edit: 'Sửa', delete: 'Xóa', edited: '(đã sửa)', linkedTo: 'liên kết', cancelLink: 'Hủy liên kết', editTextTitle: 'Trình soạn thảo văn bản',
+    documents: 'Dự án', ready: 'Sẵn sàng', preferences: 'Cài đăt', visualStyle: 'Giao diện', colorTone: 'Màu sắc', language: 'Ngôn ngữ', apply: 'Áp dụng', setupDoc: 'Tạo chủ đề mới', editDoc: 'Chỉnh sửa thông tin', docTitleLabel: 'Tên:', threadSubject: 'Chủ đề thảo luận', initialMsg: 'Tin nhắn đầu tiên', selectFile: 'Chọn bản vẽ', changeFile: 'Thay đổi', useImageLabel: 'Sử dụng bản vẽ (Hình ảnh)', noImageLabel: 'Không dùng ảnh (Trắng)', startProject: 'Bắt đầu', updateInfo: 'Cập nhật', deleteDoc: 'Xóa', writeMsg: 'Nhập tin nhắn...', replyTo: 'Trả lời:', discussionStream: 'Luồng thảo luận', globalWorkspace: 'Không gian làm việc', live: 'TRỰC TIẾP', projectReady: 'Dự án đã sẵn sàng', welcomeMsg: 'Bắt đầu bằng cách nhấn "+" ở thanh bên.', addedItem: 'đã thêm ', updatedText: 'cập nhật văn bản', whiteboard: 'Bảng trắng', toolSelect: 'Chọn', toolArrow: 'Mũi tên', toolLine: 'Đường kẻ', toolRect: 'Hình chữ nhật', toolCircle: 'Hình tròn', toolStar: 'Ngôi sao', toolText: 'Văn bản', toolPencil: 'Bút chì', textPlaceholder: 'Nhập nội dung...', fontSize: 'Kích cỡ', save: 'Lưu', cancel: 'Hủy', edit: 'Sửa', delete: 'Xóa', edited: '(đã sửa)', linkedTo: 'liên kết', cancelLink: 'Hủy liên kết', editTextTitle: 'Trình soạn thảo văn bản', reply: 'Trả lời', editMessage: 'Sửa tin nhắn', deleteMessage: 'Xóa tin nhắn', linkAnnotation: 'Liên kết hình', noMessages: 'Chưa có tin nhắn', replying: 'Đang trả lời...', updating: 'Đang cập nhật...', selectDocFirst: 'Chọn chủ đề trước',
     // Added for Settings
     account: 'Tài khoản', name: 'Tên hiển thị', organization: 'Tổ chức', logout: 'Đăng xuất', backToProjects: 'Quay lại danh sách', saved: 'Đã lưu', toolImage: 'Hình ảnh', close: 'Hoàn tất',
     // Added for Setup
@@ -126,9 +148,9 @@ export const TRANSLATIONS: Record<string, any> = {
     connectionFailed: 'Kết nối thất bại: ',
     invalidConfig: 'Cấu hình không hợp lệ',
     // Themes and Colors
-    theme_neumorphism: 'Neu 2.0', theme_claymorphism: 'Đất Sét 3D', theme_glassmorphism: 'Kính',
+    theme_neumorphism: 'Neu 2.0', theme_claymorphism: 'Đất Sét 3D', theme_glassmorphism: 'Kính', theme_parallax: 'Parallax Revival',
     color_standard: 'SaaS Sáng', color_midnight: 'Tinh Vân', color_natural: 'Rừng Sage', color_warm: 'Hoàng Hôn Đất Sét',
-    color_ocean: 'Gió Biển', color_sunlight: 'Ngày Nắng',
+    color_ocean: 'Gió Biển', color_sunlight: 'Ngày Nắng', color_harmony: 'Hòa Âm Thiên Nhiên',
     // Languages
     lang_ja: 'Tiếng Nhật', lang_en: 'Tiếng Anh', lang_vi: 'Tiếng Việt'
   }

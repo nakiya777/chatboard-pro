@@ -1,7 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Annotation, ColorSystem, DocData, Message } from '../types';
 import { User } from 'firebase/auth';
-import { Firestore, collection, addDoc, serverTimestamp, updateDoc, doc } from 'firebase/firestore';
+import { Firestore, collection, addDoc, serverTimestamp, updateDoc, doc, deleteField } from 'firebase/firestore';
 import { processImageToWebP } from '../utils/imageUtils';
 import { getResizeChange, Rect } from '../utils/geometry';
 
@@ -149,7 +149,12 @@ export const useWhiteboard = ({ user, db, projectId, activeDocId, activeDocData,
     }
     if (!activeDocId) return;
     const pt = getSVGPoint(e);
-    setDrawingShape({ type: tool as any, x: pt.x, y: pt.y, width: 0, height: 0, stroke: defaults.stroke, strokeWidth: defaults.strokeWidth, strokeStyle: defaults.strokeStyle, fill: 'none', docId: activeDocId, rotation: 0, ...defaults, points: tool === 'pencil' ? [{x: pt.x, y: pt.y}] : undefined });
+    // Fix: For pencil, start at 0,0 (origin) because points are absolute.
+    // For others, start at click position.
+    const startX = tool === 'pencil' ? 0 : pt.x;
+    const startY = tool === 'pencil' ? 0 : pt.y;
+
+    setDrawingShape({ type: tool as any, x: startX, y: startY, width: 0, height: 0, stroke: defaults.stroke, strokeWidth: defaults.strokeWidth, strokeStyle: defaults.strokeStyle, fill: 'none', docId: activeDocId, rotation: 0, ...defaults, points: tool === 'pencil' ? [{x: pt.x, y: pt.y}] : undefined });
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
@@ -170,9 +175,8 @@ export const useWhiteboard = ({ user, db, projectId, activeDocId, activeDocData,
       if (type === 'move') {
           newAnn.x = startShape.x + dx;
           newAnn.y = startShape.y + dy;
-          if (newAnn.type === 'pencil' && newAnn.points) {
-               newAnn.points = startShape.points.map((p: any) => ({ x: p.x + dx, y: p.y + dy }));
-          }
+          // Fix: Do not update points for pencil, relying on x/y translation only.
+
       } else if (type === 'resize') {
           // Robust resize using geometry utils
           // Convert shape to Rect interface expected by utils
@@ -269,11 +273,21 @@ export const useWhiteboard = ({ user, db, projectId, activeDocId, activeDocData,
             const typeLabel = t('tool' + (shape.type?.charAt(0).toUpperCase() || '') + shape.type?.slice(1));
             await addDoc(collection(db, 'projects', projectId, 'messages'), { docId: activeDocId, annotationIds: [annRef.id], content: `[${dateStr}] ${typeLabel}${t('addedItem')}`, author: `User-${user.uid.slice(0, 4)}`, authorId: user.uid, createdAt: serverTimestamp(), depth: 0 });
             
-            setTool('select'); setSelectedIds([annRef.id]); setActiveAnnotationIds([annRef.id]);
+            setTool('select'); 
+            
             if (isText) {
+              // Text needs selection to show edit modal? 
+              // Usually text edit needs selection handles + modal.
+              setSelectedIds([annRef.id]); 
+              setActiveAnnotationIds([annRef.id]);
+              
               setEditingTextId(annRef.id);
               setTextInput("");
               setTextStyle({ bold: false, italic: false, fontSize: defaults.fontSize, color: defaults.stroke });
+            } else {
+               // Per user request, do not select other shapes after drawing.
+               setSelectedIds([]);
+               setActiveAnnotationIds([]);
             }
         } catch (e) { console.error(e); }
       }
@@ -324,14 +338,20 @@ export const useWhiteboard = ({ user, db, projectId, activeDocId, activeDocData,
   }, []);
   
   // Arrow Maker Helper
-  const onToggleArrow = useCallback(async () => {
-     if(selectedIds.length !== 1 || !db || !projectId) return;
-     const targetId = selectedIds[0];
-     // We need to fetch current state or assume activeAnnotationIds has fresh data?
-     // Actually useWhiteboard doesn't own 'annotations' list. It's passed in App.tsx but not stored here.
-     // We can't access 'annotations' here easily unless we add it to props or rely on transforming logic initiated from UI.
-     // Better approach: This logic invoked from UI (Toolbar) where annotations are available.
-  }, [selectedIds, db, projectId]);
+  const onToggleArrow = useCallback(async (annotation: Annotation) => {
+     if(!db || !projectId || !annotation) return;
+     const annRef = doc(db, 'projects', projectId, 'annotations', annotation.id);
+     
+     if (annotation.arrowPoint) {
+         await updateDoc(annRef, { arrowPoint: deleteField() });
+     } else {
+         // Add arrow point near center.
+         // Default to center + offset
+         const cx = (annotation.x || 0) + (annotation.width || 0) / 2;
+         const cy = (annotation.y || 0) + (annotation.height || 0) / 2;
+         await updateDoc(annRef, { arrowPoint: { x: cx + 50, y: cy + 50 } });
+     }
+  }, [db, projectId]);
 
 
   const handleDoubleClick = (id: string, currentText?: string, currentStyle?: any) => {
@@ -363,7 +383,7 @@ export const useWhiteboard = ({ user, db, projectId, activeDocId, activeDocData,
     svgRef, containerRef,
     handleMouseDown, handleMouseMove, handleMouseUp, handleWheel,
     handleDoubleClick,
-    fitToScreen, changeActiveColor, handleTextSave, handleTextCancel,
+    onToggleArrow, fitToScreen, changeActiveColor, handleTextSave, handleTextCancel,
     handleImageUpload, triggerImageUpload, activeImageInputRef
   };
 };
